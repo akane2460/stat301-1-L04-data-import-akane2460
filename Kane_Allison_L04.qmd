@@ -1,0 +1,284 @@
+---
+title: "L04 Data Import"
+subtitle: "Data Science 1 with R (STAT 301-1)"
+author: "Allison Kane"
+
+format:
+  html:
+    toc: true
+    embed-resources: true
+    code-fold: show
+    link-external-newwindow: true
+
+execute:
+  warning: false
+  
+from: markdown+emoji 
+---
+
+
+::: {.callout-tip icon=false}
+
+## Github Repo Link
+
+[Allison Github Repo Link](https://github.com/stat301-1-2023-fall/L04-data-import-akane2460.git)
+
+:::
+
+
+## Load packages
+
+
+```{r}
+#| label: load-pkgs
+#| code-fold: false
+
+# Loading package(s)
+library(tidyverse)
+library(janitor)
+
+```
+
+## Datasets
+
+All datasets are either coded inline or contained in the `data` sub-directory.
+
+## Exercises
+
+### Exercise 1
+
+Read in `TopBabyNamesByState.txt` contained in the `data` sub-directory. 
+Determine the top male and female names in 1984 for South Dakota.
+
+::: {.callout-tip icon="false"}
+## Solution
+
+```{r}
+#| label: ex 1
+
+top_names_state <- read_delim("data/TopBabyNamesByState.txt")
+
+top_names_state |> filter(state == "SD" & year == "1984")
+
+```
+
+The top names are Jessica and Matthew.
+
+:::
+
+### Exercise 2
+
+Consider `read_csv()` and `read_tsv()`. When would you use each function?
+Apart from `file`, `skip`, and `comment`, what other arguments do they have in common?
+
+::: {.callout-tip icon="false"}
+## Solution
+
+These two functions are special cases of the read_delim() fucntion.
+read_csv() is useful in cases where a dataset is presented in a comma separated values format (hence the "csv").
+read_tsv() is useful in cases where a dataset is presented in a tab separated values format.
+
+Beyond `file`, `skip` and `comment`, both functions have arguments in common: `col_names`, `col_types`, `col_select`, `locale`, `na`, `quoted_na`, `quote`, `trim_ws`, `id`, `n_max`, `guess_max`, `name_repair`, `num_threads`, `show_col_types`, `skip_empty_rows`, and `lazy`. 
+
+:::
+
+### Exercise 3
+
+What are the most important arguments to `read_fwf()`.
+
+Read in the fixed width file `fwf_example.txt` contained in the sub-directory `data`.
+
+```{r}
+#| label: ex-3
+
+# Column names.
+column_names <- c(
+  "Entry", "Per.", "Post Date", "GL Account", "Description", "Srce.", 
+  "Cflow", "Ref.", "Post", "Debit", "Credit", "Alloc."
+  )
+```
+
+::: {.callout-tip icon="false"}
+## Solution
+
+```{r}
+#| label: ex 3 solution
+
+# specify column widths
+column_widths <- c(7, 5, 12, 12, 22, 10, 5, 9, 9, 14, 20, 7)
+
+# read in file
+fwf_example <- 
+  read_fwf("data/fwf_example.txt",
+           col_positions = fwf_widths(
+                              widths = column_widths,
+                              col_names = column_names
+                              )
+           )
+
+```
+:::
+
+### Exercise 4
+
+Practice referring to non-syntactic names in the following data frame by:
+
+```{r}
+#| label: ex-04
+
+# toy dataset
+annoying <- tibble(
+  `1` = 1:10,
+  `2` = `1` * 2 + rnorm(length(`1`))
+)
+```
+
+a.  Extracting the variable called 1.
+b.  Plotting a scatterplot of 1 vs 2.
+c.  Creating a new column called 3 which is 2 divided by 1.
+d.  Renaming the columns to one, two and three.
+
+::: {.callout-tip icon="false"}
+## Solution
+
+```{r}
+# toy dataset
+annoying <- tibble(
+  `1` = 1:10,
+  `2` = `1` * 2 + rnorm(length(`1`))
+)
+
+# a
+variable_1 <- annoying$`1`
+
+# b
+ggplot(data = annoying, aes(x = `2`, y = `1`)) +
+  geom_point() +
+  labs(
+    x = "Variable 2",
+    y = "Variable 1",
+    title = "Scatterplot of 1 vs. 2"
+  )
+
+# c
+annoying <-
+  annoying |> 
+    mutate(
+      `3` = `2` / `1`
+    )
+
+# d
+annoying <-
+  annoying |> 
+    rename(
+      three = `3`,
+      two = `2`,
+      one = `1`
+    )
+
+```
+
+:::
+
+### Exercise 5
+
+Demonstrate how to manually input the data table below into R using each of these functions:
+
+-   `tibble()`
+-   `tribble()`
+
+| price | store   | ounces |
+|-------|---------|--------|
+| 3.99  | target  | 128    |
+| 3.75  | walmart | 128    |
+| 3.00  | amazon  | 128    |
+
+::: {.callout-tip icon="false"}
+## Solution
+
+```{r}
+#| label: ex 5
+
+tibble(
+  price = c(3.99, 3.75, 3.00),
+  store = c("target", "walmart", "amazon"),
+  ounces = c(128, 128, 128)
+)
+
+tribble(
+  ~price, ~store, ~ounces,
+    3.99, "target", 128,
+    3.75, "walmart", 128,
+    3.00, "amazon", 128
+)
+```
+
+:::
+
+### Exercise 6
+
+What function in `janitor` helps you deal with non-syntactic column names in R and and also ensures column names are systematically handled? Demonstrate its use.
+
+::: {.callout-tip icon="false"}
+## Solution
+
+The `clean_names` function.
+
+```{r}
+#| label: ex 6
+unclean_data_ex <-
+  tibble(
+    "Amazon Price" = c(5, 7),
+    "Store Price" = c(1, 2),
+  )
+
+cleaned_data_ex <- unclean_data_ex |> clean_names()
+
+cleaned_data_ex  
+```
+
+
+:::
+
+### Exercise 7
+
+::: {.callout-important}
+GitHub (free account) cannot store large files. Any file over 100 MB (100,000 KB) needs to be added to the `.gitignore` file BEFORE committing.
+:::
+
+Take care of the large file issue and read the file in. Print the first 5 observations.
+
+::: {.callout-tip icon="false"}
+## Solution
+
+```{r}
+#| label: read in the large csv
+cc_est2016_alldata <- read_csv("data/cc-est2016-alldata.csv")
+
+head(cc_est2016_alldata, 5)
+```
+
+:::
+
+## Case Study
+
+::: {.callout-tip icon="false"}
+## Solution
+
+```{r}
+#| label: case study
+read_csv("data/tinder_data_clean.csv")
+
+read_rds("data/tinder_data_clean.rds")
+```
+
+The files differ specifically for variables *user_gender* and *user_interested_in*
+
+Writing out the files, we can see that the read in data frames look the same in terms of the number of observations, columns, column names, etc. However, when investigating the class of certain variables, one finds that the *user_gender* and *user_interested_in* for the rds file are listed as factors, while in the csv file they are listed as characters. This is because csv files do not retain r-specific objects. CSV saves them as characters or numeric values. 
+
+RDS files might be more useful when the data will be used again in R, specifically because it can retain these r-specific attributes. 
+
+CSV files might be more useful when presenting or exporting the data to other sources or programs. It is not reliant on R and therefore is a more universal method of sharing data.
+
+:::
+
